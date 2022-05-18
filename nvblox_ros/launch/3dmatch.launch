@@ -1,0 +1,10 @@
+<launch>
+    <arg name="path" default="/home/hjx/Documents/sun3d-mit_76_studyroom-76-1studyroom2"/>
+
+    <node name="match_node" pkg="nvblox_ros" type="match_node" output="screen">
+        <param name="voxel_size" value="0.05" />
+        <param name="path" value="$(arg path)" />
+    </node>
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find nvblox_ros)/rviz/3dmatch_demo.rviz" />
+
+</launch>

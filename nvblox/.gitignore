@@ -1,3 +1,6 @@
+**/build
+
+
 # Prerequisites
 *.d
 
@@ -30,5 +33,16 @@
 *.exe
 *.out
 *.app
-catkin_simple/
-nvblox/nvblox/build/
+
+# IDE stuff
+*.vscode
+
+# Build files
+*build
+*install
+
+# Python
+*.pyc
+
+# Reconstructions
+*.ply
