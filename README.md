@@ -34,7 +34,7 @@ You should install the dependencies as [nvblox](https://github.com/nvidia-isaac/
 mkdir -p ~/nvblox_ws/src
 cd ~/nvblox_ws/src/
 git clone --recursive https://github.com/hjxwhy/nvblox_ros1.git
-cd nvblox/nvblox
+cd nvblox_ros1/nvblox/nvblox
 mkdir build && cd build
 cmake ..
 make -j8
