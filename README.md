@@ -1,4 +1,4 @@
-# ROS 1 Wapper Nvblox (Under Developping)
+# ROS 1 Wapper Nvblox (Under Developing)
 
 [Nvblox](https://github.com/nvidia-isaac/nvblox) is a package for building a 3D reconstruction of the environment around your robot from sensor observations in real-time. This repo is modified from ROS 2 wapper [Isaac ROS Nvblox](https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_nvblox) and source [nvblox](https://github.com/nvidia-isaac/nvblox). 
 
