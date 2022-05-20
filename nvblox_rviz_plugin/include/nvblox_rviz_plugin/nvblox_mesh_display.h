@@ -25,7 +25,7 @@ class NvbloxMeshDisplay
   virtual void reset();
 
  private:
-  void processMessage(const nvblox_msgs::Mesh::ConstPtr& msg);
+  void processMessage(const nvblox_msgs::Mesh::ConstPtr& msg) override;
 
   rviz::BoolProperty* cut_ceiling_property_;
   rviz::FloatProperty* ceiling_height_property_;

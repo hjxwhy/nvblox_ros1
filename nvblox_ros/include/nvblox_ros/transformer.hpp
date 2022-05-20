@@ -66,6 +66,7 @@ private:
   bool lookupTransformQueue(const ros::Time & timestamp, Transform * transform);
   bool lookupSensorTransform(
     const std::string & sensor_frame,
+    const ros::Time & timestamp,
     Transform * transform);
 
   /// ROS State

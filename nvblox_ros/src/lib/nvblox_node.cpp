@@ -32,25 +32,25 @@ NvbloxNode::NvbloxNode(const ros::NodeHandle& nh,
                         transformer_(nh, nh_private)
 {
   // Declare & initialize the parameters.
-  voxel_size_ = nh_private_.getParam("voxel_size", voxel_size_);
-  global_frame_ = nh_private_.getParam("global_frame", global_frame_);
-  pose_frame_ = nh_private_.getParam("pose_frame", pose_frame_);
-  mesh_ = nh_private_.getParam("mesh", mesh_);
-  esdf_ = nh_private_.getParam("esdf", esdf_);
-  esdf_2d_ = nh_private_.getParam("esdf_2d", esdf_2d_);
-  distance_slice_ = nh_private_.getParam("distance_slice", distance_slice_);
-  slice_height_ = nh_private_.getParam("slice_height", slice_height_);
-  min_height_ = nh_private_.getParam("min_height", min_height_);
-  max_height_ = nh_private_.getParam("max_height", max_height_);
+  voxel_size_ = nh_private_.param("voxel_size", voxel_size_);
+  global_frame_ = nh_private_.param("global_frame", global_frame_);
+  pose_frame_ = nh_private_.param("pose_frame", pose_frame_);
+  mesh_ = nh_private_.param("mesh", mesh_);
+  esdf_ = nh_private_.param("esdf", esdf_);
+  esdf_2d_ = nh_private_.param("esdf_2d", esdf_2d_);
+  distance_slice_ = nh_private_.param("distance_slice", distance_slice_);
+  slice_height_ = nh_private_.param("slice_height", slice_height_);
+  min_height_ = nh_private_.param("min_height", min_height_);
+  max_height_ = nh_private_.param("max_height", max_height_);
   // Update rates
   max_tsdf_update_hz_ =
-    nh_private_.getParam("max_tsdf_update_hz", max_tsdf_update_hz_);
+    nh_private_.param("max_tsdf_update_hz", max_tsdf_update_hz_);
   max_color_update_hz_ =
-    nh_private_.getParam("max_color_update_hz", max_color_update_hz_);
+    nh_private_.param("max_color_update_hz", max_color_update_hz_);
   max_mesh_update_hz_ =
-    nh_private_.getParam("max_mesh_update_hz", max_mesh_update_hz_);
+    nh_private_.param("max_mesh_update_hz", max_mesh_update_hz_);
   max_esdf_update_hz_ =
-    nh_private_.getParam("max_esdf_update_hz", max_esdf_update_hz_);
+    nh_private_.param("max_esdf_update_hz", max_esdf_update_hz_);
 
   // Set the transformer settings.
   transformer_.set_global_frame(global_frame_);
@@ -61,7 +61,7 @@ NvbloxNode::NvbloxNode(const ros::NodeHandle& nh,
 
   // Subscribe to synchronized depth + cam_info topics
   // depth_sub_.subscribe(this, "depth/image");
-  constexpr int kQueueSize = 2;
+  constexpr int kQueueSize = 10;
   depth_sub_.subscribe(nh_, "depth/image", kQueueSize);
   depth_camera_info_sub_.subscribe(nh_, "depth/camera_info", kQueueSize);
 
@@ -89,26 +89,26 @@ NvbloxNode::NvbloxNode(const ros::NodeHandle& nh,
 
   // Subscribe to transforms.
   transform_sub_ =
-    nh_private_.subscribe<geometry_msgs::TransformStamped>(
+    nh_.subscribe<geometry_msgs::TransformStamped>(
     "transform", 10,
     std::bind(
       &Transformer::transformCallback, &transformer_,
       std::placeholders::_1));
-  pose_sub_ = nh_private_.subscribe<geometry_msgs::PoseStamped>(
+  pose_sub_ = nh_.subscribe<geometry_msgs::PoseStamped>(
     "pose", 10,
     std::bind(
       &Transformer::poseCallback, &transformer_,
       std::placeholders::_1));
 
   // Publishers
-  mesh_publisher_ = nh_private_.advertise<nvblox_msgs::Mesh>("~/mesh", 1);
+  mesh_publisher_ = nh_.advertise<nvblox_msgs::Mesh>("/mesh", 1);
   pointcloud_publisher_ =
-    nh_private_.advertise<sensor_msgs::PointCloud2>("~/pointcloud", 1);
+    nh_.advertise<sensor_msgs::PointCloud2>("/pointcloud", 1);
   map_slice_publisher_ =
-    nh_private_.advertise<nvblox_msgs::DistanceMapSlice>("~/map_slice", 1);
+    nh_.advertise<nvblox_msgs::DistanceMapSlice>("/map_slice", 1);
 
   // Services
-  save_ply_service_ = nh_private_.advertiseService("~/save_ply", &NvbloxNode::savePly, this);
+  save_ply_service_ = nh_.advertiseService("/save_ply", &NvbloxNode::savePly, this);
 
   // Integrator settings.
   mapper_->tsdf_integrator().max_integration_distance_m(
@@ -137,8 +137,7 @@ NvbloxNode::NvbloxNode(const ros::NodeHandle& nh,
   mapper_->esdf_integrator().min_site_distance_vox() = nh_private_.param(
     "esdf_integrator_min_site_distance_vox",
     mapper_->esdf_integrator().min_site_distance_vox());
-  mapper_->esdf_integrator().min_site_distance_vox() =
-    mapper_->esdf_integrator().max_distance_m() =
+  mapper_->esdf_integrator().max_distance_m() =
     nh_private_.param(
     "esdf_integrator_max_distance_m",
     mapper_->esdf_integrator().max_distance_m());
@@ -148,10 +147,6 @@ NvbloxNode::NvbloxNode(const ros::NodeHandle& nh,
 
   ROS_INFO(
     "Outputting results (as requested) to: %s ", output_dir_);
-
-  // Start the message statistics
-  // depth_frame_statistics_.Start();
-  // rgb_frame_statistics_.Start();
 
   ROS_INFO_STREAM("Started up nvblox node in frame " <<
       global_frame_ << " and voxel size " <<
@@ -168,23 +163,7 @@ void NvbloxNode::depthImageCallback(
   const sensor_msgs::Image::ConstPtr & depth_img_ptr,
   const sensor_msgs::CameraInfo::ConstPtr & camera_info_msg)
 {
-  // Message statistics
-  // depth_frame_statistics_.OnMessageReceived(
-  //   *depth_img_ptr, this->get_clock()->now().nanoseconds());
-  // constexpr int kPublishPeriodMs = 10000;
-  // auto & clk = *this->get_clock();
-  // RCLCPP_INFO_THROTTLE(
-  //   this->get_logger(), clk, kPublishPeriodMs,
-  //   "Depth frame statistics: \n" +
-  //   libstatistics_collector::moving_average_statistics::
-  //   StatisticsDataToString(
-  //     depth_frame_statistics_.GetStatisticsResults()));
-
-  // ROS_INFO_THROTTLE(clk, kPublishPeriodMs,
-  //   "Timing statistics: \n" + nvblox::timing::Timing::Print());
-
   timing::Timer ros_total_timer("ros/total");
-
   // Cache clock_now.
   ros::Time clock_now = depth_img_ptr->header.stamp;
 
@@ -206,21 +185,7 @@ void NvbloxNode::colorImageCallback(
   const sensor_msgs::Image::ConstPtr & color_image_ptr,
   const sensor_msgs::CameraInfo::ConstPtr & camera_info_msg)
 {
-  // Message statistics
-  // rgb_frame_statistics_.OnMessageReceived(
-  //   *color_image_ptr, this->get_clock()->now().nanoseconds());
-  // constexpr int kPublishPeriodMs = 10000;
-  // auto & clk = *this->get_clock();
-  // // ROS_INFO_THROTTLE()
-  // RCLCPP_INFO_THROTTLE(
-  //   this->get_logger(), clk, kPublishPeriodMs,
-  //   "RGB frame statistics: \n" +
-  //   libstatistics_collector::moving_average_statistics::
-  //   StatisticsDataToString(
-  //     rgb_frame_statistics_.GetStatisticsResults()));
-
   timing::Timer ros_total_timer("ros/total");
-
   // Cache clock_now.
   ros::Time clock_now = color_image_ptr->header.stamp;
 
@@ -348,6 +313,11 @@ bool NvbloxNode::processDepthImage(
   {
     return false;
   }
+
+  Eigen::Quaternionf q_L_O = Eigen::Quaternionf::FromTwoVectors(
+    Vector3f(0, 1, 0), Vector3f(0, 0, 1));
+  T_S_C = q_L_O * T_S_C;
+
   transform_timer.Stop();
 
   timing::Timer conversions_timer("ros/tsdf/conversions");
@@ -383,6 +353,9 @@ bool NvbloxNode::processColorImage(
   {
     return false;
   }
+  Eigen::Quaternionf q_L_O = Eigen::Quaternionf::FromTwoVectors(
+    Vector3f(0, 1, 0), Vector3f(0, 0, 1));
+  T_S_C = q_L_O * T_S_C;
 
   transform_timer.Stop();
 

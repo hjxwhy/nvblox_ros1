@@ -15,7 +15,7 @@ Below is an example of ROS 1 test on 3dmatch's [Sun3D](http://sun3d.cs.princeton
 ## TODO
 
 - [x] Test base 3dmatch_node function on 3dmatch data
-- [ ] Test nvblox_node  on rosbag
+- [x] Test nvblox_node  on rosbag, you can get [script](https://drive.google.com/file/d/1nmj--czrhsxtP2iAJJb0XnJI5d2ImNZz/view?usp=sharing) convert 3dmatch to bag for test nvblox_node
 - [ ] Add more function on EuRoc, KITTI and so on data.
 - [ ] Add stereo depth map filter function
 

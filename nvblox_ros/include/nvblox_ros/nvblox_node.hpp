@@ -16,7 +16,6 @@
 #include <message_filters/sync_policies/exact_time.h>
 #include <message_filters/synchronizer.h>
 
-// #include <libstatistics_collector/topic_statistics_collector/topic_statistics_collector.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/Image.h>
@@ -92,14 +91,12 @@ private:
   // Depth sub.
   std::shared_ptr<message_filters::Synchronizer<time_policy_t>> timesync_depth_;
   message_filters::Subscriber<sensor_msgs::Image> depth_sub_;
-  message_filters::Subscriber<sensor_msgs::CameraInfo>
-  depth_camera_info_sub_;
+  message_filters::Subscriber<sensor_msgs::CameraInfo> depth_camera_info_sub_;
 
   // Color sub
   std::shared_ptr<message_filters::Synchronizer<time_policy_t>> timesync_color_;
   message_filters::Subscriber<sensor_msgs::Image> color_sub_;
-  message_filters::Subscriber<sensor_msgs::CameraInfo>
-  color_camera_info_sub_;
+  message_filters::Subscriber<sensor_msgs::CameraInfo> color_camera_info_sub_;
 
   // Optional transform subs.
   ros::Subscriber transform_sub_;
@@ -111,27 +108,18 @@ private:
   ros::Publisher map_slice_publisher_;
   ros::ServiceServer save_ply_service_;
 
-
-  // rclcpp::Publisher<nvblox_msgs::msg::Mesh>::SharedPtr mesh_publisher_;
-  // rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr
-  //   pointcloud_publisher_;
-  // rclcpp::Publisher<nvblox_msgs::msg::DistanceMapSlice>::SharedPtr
-  //   map_slice_publisher_;
-
-  // rclcpp::Service<std_srvs::srv::Empty>::SharedPtr save_ply_service_;
-
   // ROS & nvblox settings
   float voxel_size_ = 0.05f;
   bool esdf_ = true;
-  bool esdf_2d_ = true;
+  bool esdf_2d_ = false;
   bool distance_slice_ = true;
   bool mesh_ = true;
-  float slice_height_ = 1.0f;
+  float slice_height_ = 0.5f;
 
   // Used for ESDF slicing. Everything between min and max height will be
   // compressed to a single 2D level, output at slice_height_.
   float min_height_ = 0.0f;
-  float max_height_ = 1.0f;
+  float max_height_ = 2.0f;
 
   // ROS settings & update throttles
   std::string global_frame_ = "map";
@@ -153,16 +141,6 @@ private:
   // Caches for GPU images
   ColorImage color_image_;
   DepthImage depth_image_;
-
-  // Message statistics (useful for debugging)
-  // libstatistics_collector::topic_statistics_collector::
-  // ReceivedMessagePeriodCollector<sensor_msgs::msg::Image>
-  // depth_frame_statistics_;
-  // libstatistics_collector::topic_statistics_collector::
-  // ReceivedMessagePeriodCollector<sensor_msgs::msg::Image>
-  // rgb_frame_statistics_;
-
-  
 
   // Output directory
   std::string output_dir_ = "";

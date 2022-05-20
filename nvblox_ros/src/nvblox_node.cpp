@@ -33,7 +33,6 @@ int main(int argc, char * argv[])
   ros::NodeHandle nh;
   ros::NodeHandle nh_private("~");
   nvblox::NvbloxNode node(nh, nh_private);
-  // std::shared_ptr<nvblox::NvbloxNode> node(new nvblox::NvbloxNode(nh, nh_private));
   ros::spin();
   ros::shutdown();
   return 0;

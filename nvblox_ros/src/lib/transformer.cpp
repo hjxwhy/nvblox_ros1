@@ -26,7 +26,7 @@ Transformer::Transformer(const ros::NodeHandle& nh, const ros::NodeHandle& nh_pr
 
   // Init the transform listeners if we ARE using TF at all.
   if (use_tf_transforms_) {
-    tf_buffer_ = std::make_unique<tf2_ros::Buffer>(ros::Duration());
+    tf_buffer_ = std::make_unique<tf2_ros::Buffer>();
     transform_listener_ =
       std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
   }
@@ -54,7 +54,7 @@ bool Transformer::lookupTransformToGlobalFrame(
     if (sensor_frame != pose_frame_) {
       // Ok but we also need a pose_frame -> sensor_frame lookup here.
       Transform T_P_S;
-      if (!lookupSensorTransform(sensor_frame, &T_P_S)) {
+      if (!lookupSensorTransform(sensor_frame, timestamp, &T_P_S)) {
         return false;
       }
 
@@ -76,19 +76,19 @@ bool Transformer::lookupTransformToGlobalFrame(
 
 void Transformer::transformCallback(
   const geometry_msgs::TransformStamped::ConstPtr transform_msg)
-{
+{ 
   ros::Time timestamp = transform_msg->header.stamp;
-  transform_queue_[timestamp.toSec()] =
+  transform_queue_[timestamp.toNSec()] =
     tf2::transformToEigen(*transform_msg).matrix().cast<float>();
 }
 
 void Transformer::poseCallback(
   const geometry_msgs::PoseStamped::ConstPtr transform_msg)
-{
+{ 
   ros::Time timestamp = transform_msg->header.stamp;
   Eigen::Affine3d T_G_P_double;
   Eigen::fromMsg(transform_msg->pose, T_G_P_double);
-  transform_queue_[timestamp.toSec()] =
+  transform_queue_[timestamp.toNSec()] =
     T_G_P_double.matrix().cast<float>();
 }
 
@@ -137,6 +137,7 @@ bool Transformer::lookupTransformQueue(const ros::Time & timestamp, Transform * 
 
 bool Transformer::lookupSensorTransform(
   const std::string & sensor_frame,
+  const ros::Time & timestamp,
   Transform * transform)
 {
   auto it = sensor_transforms_.find(sensor_frame);
@@ -148,7 +149,7 @@ bool Transformer::lookupSensorTransform(
     }
     bool success = lookupTransformTf(
       pose_frame_, sensor_frame,
-      ros::Time::now(), transform);
+      timestamp, transform);
     if (success) {
       sensor_transforms_[sensor_frame] = *transform;
     } else {

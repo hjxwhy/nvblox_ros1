@@ -1,0 +1,40 @@
+<launch>
+  <arg name="play_bag" default="true" />
+  <arg name="bag_file" default="/home/hjx/Videos/meituan/match.bag"/>
+  <arg name="voxel_size" default="0.05"/>
+  <arg name="output_dir" default=""/>
+
+  <node name="player" pkg="rosbag" type="play" output="screen" args="-r 0.2 --clock $(arg bag_file)" if="$(arg play_bag)"/>
+
+    <node name="nvblox_node" pkg="nvblox_ros" type="nvblox_node" output="screen">
+        <param name="voxel_size" value="$(arg voxel_size)" />
+        <param name="global_frame" value="map" />
+        <param name="pose_frame" value="base_link"/>
+        <param name="mesh" value="true"/>
+        <param name="esdf" value="true"/>
+        <param name="esdf_2d" value="false"/>
+        <param name="distance_slice" value="false"/>
+        <param name="slice_height" value="0.2"/>
+        <param name="min_height" value="0"/>
+        <param name="max_height" value="2"/>
+        <param name="max_tsdf_update_hz" value="10"/>
+        <param name="max_color_update_hz" value="5"/>
+        <param name="max_mesh_update_hz" value="5"/>
+        <param name="max_esdf_update_hz" value="2"/>
+        <param name="tsdf_integrator_max_integration_distance_m" value="10."/>
+        <param name="tsdf_integrator_truncation_distance_vox" value="4."/>
+        <param name="tsdf_integrator_max_weight" value="100."/>
+        <param name="mesh_integrator_min_weight" value="1e-4"/>
+        <param name="mesh_integrator_weld_vertices" value="false"/>
+        <param name="color_integrator_max_integration_distance_m" value="10."/>
+        <param name="esdf_integrator_min_weight" value="1e-4"/>
+        <param name="esdf_integrator_min_site_distance_vox" value="1."/>
+        <param name="esdf_integrator_max_distance_m" value="10."/>
+        <param name="output_dir" value="$(arg output_dir)"/>
+        <!-- Transform params -->
+        <param name="use_tf_transforms" value="true"/>
+        <param name="use_topic_transforms" value="true"/>
+    </node>
+    <node name="rviz" pkg="rviz" type="rviz" output="screen" args="-d $(find nvblox_ros)/rviz/3dmatch_demo.rviz" />
+
+</launch>
